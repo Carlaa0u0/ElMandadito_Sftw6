@@ -1,41 +1,54 @@
 import 'package:flutter/material.dart';
 
-class ProductSection extends StatelessWidget {
-  const ProductSection({super.key});
+class ProductCard extends StatelessWidget {
+  final String productName;
+  final String imageUrl;
+  final String price;
+
+  const ProductCard({
+    super.key,
+    required this.productName,
+    required this.imageUrl,
+    required this.price,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(8),
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: 6,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 3 / 4,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-      ),
-      itemBuilder: (context, index) {
-        return Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          elevation: 4,
-          child: Column(
-            children: [
-              Expanded(
-                child: Image.asset(
-                  'assets/product${index + 1}.jpg',
+    return SizedBox(
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 4,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 200, // Tamaño fijo para la imagen
+              width: double.infinity,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                child: Image.network(
+                  imageUrl,
                   fit: BoxFit.cover,
                 ),
               ),
-              const SizedBox(height: 8),
-              Text('Producto ${index + 1}', style: const TextStyle(fontWeight: FontWeight.bold)),
-              const Text('\$10.00', style: TextStyle(color: Colors.green)),
-              const SizedBox(height: 8),
-            ],
-          ),
-        );
-      },
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                productName,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                '\$$price',
+                style: const TextStyle(color: Colors.green),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
