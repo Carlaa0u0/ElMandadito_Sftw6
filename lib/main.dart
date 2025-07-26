@@ -1,7 +1,15 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/cart_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/register_screen.dart';
+import 'screens/product_detail_screen.dart'; 
+import 'screens/personal_info_screen.dart'; 
+import 'screens/help_center_screen.dart'; 
+import 'screens/purchase_history_screen.dart'; 
+
 import 'widgets/login_prompt_sheet.dart';
 
 void main() {
@@ -21,7 +29,13 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const MainPage(),
+      // Definimos las rutas con nombre aquí
+      routes: {
+        '/login_screen': (context) => const LoginScreen(),
+        '/register_screen': (context) => const RegisterScreen(),
+        
+      },
+      home: const MainPage(), 
     );
   }
 }
@@ -35,70 +49,81 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int _currentIndex = 0;
   bool _isLoggedIn = false;
-  String? _userName = 'Papito';
+  String? _userName = 'Usuario'; 
 
   late List<Widget> _screens;
 
   @override
   void initState() {
     super.initState();
-    _buildScreens();
+    _buildScreens(); 
   }
 
   void _buildScreens() {
     _screens = [
-      const HomeScreen(),
+      const HomeScreen(), 
       ProfileScreen(
         onGoHome: () {
           setState(() {
-            _currentIndex = 0;
+            _currentIndex = 0; 
           });
         },
-        isLoggedIn: _isLoggedIn,
-        userName: _userName,
+        isLoggedIn: _isLoggedIn, 
+        userName: _userName, 
         onLogout: () {
+          
           setState(() {
             _isLoggedIn = false;
-            _userName = null;
-            _currentIndex = 0;
-            _buildScreens();
+            _userName = null; 
+            _currentIndex = 0; 
+            _buildScreens(); 
           });
         },
       ),
       CartScreen(
         onGoHome: () {
           setState(() {
-            _currentIndex = 0;
+            _currentIndex = 0; 
           });
         },
       ),
     ];
   }
 
-  void _simulateLogin() {
+  // Método para simular el inicio de sesión y actualizar el estado
+  void _handleAuthSuccess(String name) {
     setState(() {
       _isLoggedIn = true;
-      _userName = 'Papito'; // O actualízalo según el usuario real
-      _currentIndex = 1;
-      _buildScreens();
+      _userName = name;
+      _currentIndex = 1; // Navega a la pestaña de Perfil después del login
+      _buildScreens(); // Reconstruye las pantallas con el nuevo estado
     });
   }
 
-  void showLoginPrompt(BuildContext context) {
-    showModalBottomSheet(
+  // Función para mostrar el BottomSheet de login/registro
+  Future<void> _showLoginPrompt(BuildContext context) async {
+    final result = await showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
-      builder: (BuildContext context) {
+      builder: (BuildContext ctx) {
         return LoginPromptSheet(
-          onLogin: () {
-            Navigator.pop(context);
-            _simulateLogin();
+          onLogin: () async {
+            Navigator.pop(ctx);
+            final loginResult =
+                await Navigator.pushNamed(context, '/login_screen');
+            if (loginResult == true) {
+              _handleAuthSuccess(_userName ?? 'Usuario');
+            }
           },
-          onRegister: () {
-            Navigator.pop(context);
-            _simulateLogin();
+          onRegister: () async {
+            Navigator.pop(ctx);
+            final registerResult =
+                await Navigator.pushNamed(context, '/register_screen');
+            if (registerResult == true) {
+              _handleAuthSuccess(_userName ?? 'Usuario');
+            }
           },
         );
       },
@@ -108,7 +133,7 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_currentIndex],
+      body: _screens[_currentIndex], // Muestra la pantalla actual
       bottomNavigationBar: ClipRRect(
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(30),
@@ -120,9 +145,8 @@ class _MainPageState extends State<MainPage> {
           selectedItemColor: Colors.white,
           unselectedItemColor: Colors.white70,
           onTap: (index) {
-            // Si el usuario toca Perfil o Carrito y no está logueado, muestra login
             if ((index == 1 || index == 2) && !_isLoggedIn) {
-              showLoginPrompt(context);
+              _showLoginPrompt(context);
             } else {
               setState(() {
                 _currentIndex = index;
@@ -132,7 +156,8 @@ class _MainPageState extends State<MainPage> {
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
-            BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Carrito'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.shopping_cart), label: 'Carrito'),
           ],
         ),
       ),

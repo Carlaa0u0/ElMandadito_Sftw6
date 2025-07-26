@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-
+/// Tarjeta que muestra un producto individual.
+/// Incluye el nombre, una imagen de ejemplo y el precio.
 class ProductCard extends StatelessWidget {
-  final String productName;
-  final String imageUrl;
-  final String price;
+  final String productName; // Nombre del producto.
+  final String imageUrl;    // URL de la imagen (usada como identificador, no para cargar imagen real).
+  final String price;       // Precio del producto.
 
   const ProductCard({
     super.key,
@@ -14,37 +15,41 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        elevation: 4,
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 4,
+      child: Container(
+        padding: const EdgeInsets.all(8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              height: 200, // Tamaño fijo para la imagen
+            // Contenedor para la imagen del producto (es un placeholder azul).
+            Container(
+              height: 100,
               width: double.infinity,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                child: Image.network(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                ),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade400, // Color de fondo del placeholder.
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Center(
+                child: Icon(Icons.image, color: Colors.white70, size: 40),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                productName,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
+            const SizedBox(height: 10),
+            // Nombre del producto.
+            Text(
+              productName,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              maxLines: 1, // Limita a una línea.
+              overflow: TextOverflow.ellipsis, // Añade "..." si el texto es muy largo.
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Text(
-                '\$$price',
-                style: const TextStyle(color: Colors.green),
-              ),
+            const SizedBox(height: 4),
+            // Texto que combina "Desc. y precio" con el precio real.
+            Text(
+              'Desc. y precio \$$price',
+              style: const TextStyle(color: Colors.grey, fontSize: 14),
+              maxLines: 2, // Limita a dos líneas.
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

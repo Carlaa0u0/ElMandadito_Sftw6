@@ -1,10 +1,14 @@
+// lib/screens/profile_screen.dart
 import 'package:flutter/material.dart';
+import 'personal_info_screen.dart';
+import 'help_center_screen.dart';
+import 'purchase_history_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   final void Function() onGoHome;
   final bool isLoggedIn;
   final String? userName;
-  final void Function() onLogout; // ← CORREGIDO
+  final void Function() onLogout;
 
   const ProfileScreen({
     super.key,
@@ -13,6 +17,44 @@ class ProfileScreen extends StatelessWidget {
     this.userName,
     required this.onLogout,
   });
+
+  // Widget auxiliar para los elementos del menú de perfil con el estilo de la imagen
+  Widget _buildStyledProfileMenuItem({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color backgroundColor = const Color(0xFF88D0E0), // Color azul claro de la imagen
+    Color iconColor = Colors.white,
+    Color textColor = Colors.white,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6.0), // Espacio entre elementos
+      child: ElevatedButton.icon(
+        onPressed: onTap,
+        icon: Icon(icon, color: iconColor, size: 24),
+        label: Text(
+          title,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+            color: textColor,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: backgroundColor,
+          foregroundColor: textColor, // Color del texto y el icono
+          minimumSize: const Size(double.infinity, 55), // Ancho completo y altura fija
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15), // Bordes redondeados
+          ),
+          elevation: 3, // Sombra
+          padding: const EdgeInsets.symmetric(horizontal: 20), // Padding interno
+        ),
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -62,155 +104,160 @@ class ProfileScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 246, 245, 245),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Text(
-                'Hola, ${userName ?? 'Usuario'}',
-                style: const TextStyle(
-                  fontSize: 20,
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
+            // Tarjeta de bienvenida de usuario (ajustada para el diseño de la imagen)
+            Card(
+              margin: const EdgeInsets.only(bottom: 20),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              elevation: 3,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200], // Fondo gris claro como en la imagen
+                  borderRadius: BorderRadius.circular(15),
                 ),
-                textAlign: TextAlign.center,
+                child: Row(
+                  children: [
+                    Icon(Icons.person, color: Colors.grey[600], size: 28), // Ícono de persona
+                    const SizedBox(width: 10),
+                    Text(
+                      'Usuario', // El texto "Usuario" de la imagen
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    // Si quieres mostrar el nombre dinámico del usuario, aquí iría:
+                    // Text(
+                    //   'Hola, ${userName ?? 'Usuario'}',
+                    //   style: const TextStyle(
+                    //     fontSize: 20,
+                    //     color: Colors.black87,
+                    //     fontWeight: FontWeight.bold,
+                    //   ),
+                    // ),
+                  ],
+                ),
               ),
             ),
 
-            const SizedBox(height: 40),
-
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 246, 245, 245),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    height: 150,
-                    width: 150,
-                    color: const Color.fromARGB(255, 238, 237, 237),
-                    child: const Center(child: Text('QR aquí')),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      // Acción para Contactanos
-                    },
-                    icon: const Icon(Icons.message),
-                    label: const Text('Contáctanos'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 238, 237, 237),
-                      foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 40),
-
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 246, 245, 245),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Column(
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      // Acción Información de Pago
-                    },
-                    icon: const Icon(Icons.payment),
-                    label: const Text('Información de Pago'),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(50),
-                      backgroundColor: const Color.fromARGB(255, 238, 237, 237),
-                      foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      // Acción Información Personal
-                    },
-                    icon: const Icon(Icons.person),
-                    label: const Text('Información Personal'),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(50),
-                      backgroundColor: const Color.fromARGB(255, 238, 237, 237),
-                      foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      // Acción Centro de ayuda
-                    },
-                    icon: const Icon(Icons.help_outline),
-                    label: const Text('Centro de ayuda'),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(50),
-                      backgroundColor: const Color.fromARGB(255, 238, 237, 237),
-                      foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      // Acción Historial de compra
-                    },
-                    icon: const Icon(Icons.history),
-                    label: const Text('Historial de compra'),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(50),
-                      backgroundColor: const Color.fromARGB(255, 238, 237, 237),
-                      foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                  ),
-
-                  if (isLoggedIn) ...[
-                    const SizedBox(height: 12),
-                    ElevatedButton.icon(
-                      onPressed: onLogout, // ← usa directamente el callback
-                      icon: const Icon(Icons.logout),
-                      label: const Text('Cerrar sesión'),
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: const Size.fromHeight(50),
-                        backgroundColor: const Color.fromARGB(255, 209, 60, 60),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
+            // Sección del QR y Contactanos (ajustada para el diseño de la imagen)
+            Card(
+              margin: const EdgeInsets.only(bottom: 20),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              elevation: 3,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200], // Fondo gris claro como en la imagen
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      height: 180,
+                      width: 180,
+                      color: Colors.white, // Fondo blanco para el QR
+                      child: const Center(
+                        child: Text(
+                          'Código QR aquí',
+                          style: TextStyle(color: Colors.grey, fontSize: 16),
                         ),
                       ),
                     ),
-                  ]
-                ],
+                    const SizedBox(height: 16),
+                    // Botón "Contactanos" con el estilo específico de la imagen
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        // Acción para Contactanos (puedes navegar a HelpCenterScreen si es lo mismo)
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Abriendo Contactanos...')),
+                        );
+                      },
+                      icon: const Icon(Icons.send, color: Colors.white), // Ícono blanco
+                      label: const Text('Contáctanos', style: TextStyle(color: Colors.white)), // Texto blanco
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF88D0E0), // Color azul claro
+                        minimumSize: const Size(180, 45), // Tamaño fijo como en la imagen
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30), // Bordes más redondeados
+                        ),
+                        elevation: 3,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
+
+            // Menú de opciones (usando el nuevo widget _buildStyledProfileMenuItem)
+            _buildStyledProfileMenuItem(
+              context: context,
+              icon: Icons.payment,
+              title: 'Información de Pago',
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Abriendo Información de Pago...')),
+                );
+                // Si tuvieras una pantalla para esto, navegarías así:
+                // Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentInfoScreen()));
+              },
+            ),
+            _buildStyledProfileMenuItem(
+              context: context,
+              icon: Icons.person,
+              title: 'Información Personal',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PersonalInfoScreen()),
+                );
+              },
+            ),
+            _buildStyledProfileMenuItem(
+              context: context,
+              icon: Icons.help_outline,
+              title: 'Centro de ayuda',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HelpCenterScreen()),
+                );
+              },
+            ),
+            _buildStyledProfileMenuItem(
+              context: context,
+              icon: Icons.history,
+              title: 'Historial de compra',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PurchaseHistoryScreen()),
+                );
+              },
+            ),
+
+            if (isLoggedIn) ...[
+              const SizedBox(height: 20),
+              // Botón de Cerrar Sesión (con el estilo de la imagen)
+              ElevatedButton.icon(
+                onPressed: onLogout,
+                icon: const Icon(Icons.logout, color: Colors.white),
+                label: const Text('Cerrar Sesión'),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 55),
+                  backgroundColor: const Color(0xFFCB3344), // Rojo para cerrar sesión
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  elevation: 5,
+                ),
+              ),
+            ],
+            const SizedBox(height: 20),
           ],
         ),
       ),

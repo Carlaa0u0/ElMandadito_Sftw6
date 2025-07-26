@@ -1,22 +1,17 @@
-// lib/screens/cart_screen.dart
-
+// lib/screens/purchase_history_screen.dart
 import 'package:flutter/material.dart';
 
-/// Pantalla del carrito de compras.
-/// Muestra los productos y permite volver o ir a pagar.
-class CartScreen extends StatelessWidget {
-  final void Function() onGoHome; // Función para volver a la página principal.
-
-  const CartScreen({super.key, required this.onGoHome});
+class PurchaseHistoryScreen extends StatelessWidget {
+  const PurchaseHistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Productos de ejemplo en el carrito.
-    final List<Map<String, String>> cartItems = [
-      {'name': 'Producto 1', 'quantity': '2', 'price': '15.00'},
-      {'name': 'Producto 2', 'quantity': '1', 'price': '22.50'},
-      {'name': 'Producto 3', 'quantity': '3', 'price': '8.75'},
-      {'name': 'Producto 4', 'quantity': '1', 'price': '30.00'},
+    // Datos de ejemplo para el historial de compras
+    final List<Map<String, String>> purchaseHistoryItems = [
+      {'name': 'Producto A', 'quantity': '1', 'price': '25.00', 'date': '2023-01-10'},
+      {'name': 'Producto B', 'quantity': '2', 'price': '12.50', 'date': '2023-01-05'},
+      {'name': 'Producto C', 'quantity': '1', 'price': '50.00', 'date': '2022-12-28'},
+      {'name': 'Producto D', 'quantity': '4', 'price': '5.99', 'date': '2022-12-15'},
     ];
 
     return Scaffold(
@@ -42,12 +37,14 @@ class CartScreen extends StatelessWidget {
                         size: 30,
                         color: Colors.white,
                       ),
-                      onPressed: onGoHome, // Volver atrás.
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
                     ),
                   ),
                   const Center(
                     child: Text(
-                      'Carrito',
+                      'Historial de Compras',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -61,66 +58,36 @@ class CartScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          // Lista de los ítems del carrito.
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: cartItems.length,
-              itemBuilder: (context, index) {
-                final item = cartItems[index];
-                // Muestra cada producto en una tarjeta.
-                return CartItemCard(
-                  productName: item['name']!,
-                  quantity: item['quantity']!,
-                  price: item['price']!,
-                );
-              },
-            ),
-          ),
-          // Botón para ir a pagar.
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: () {
-                // TODO: Aquí va la lógica de pago.
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Procediendo al pago...')),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFCB3344),
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 55),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                elevation: 5,
-              ),
-              child: const Text(
-                'Proceder a pagar',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-        ],
+      body: ListView.builder(
+        padding: const EdgeInsets.all(16.0),
+        itemCount: purchaseHistoryItems.length,
+        itemBuilder: (context, index) {
+          final item = purchaseHistoryItems[index];
+          return PurchaseHistoryItemCard(
+            productName: item['name']!,
+            quantity: item['quantity']!,
+            price: item['price']!,
+            purchaseDate: item['date']!,
+          );
+        },
       ),
     );
   }
 }
 
-/// Tarjeta para un solo ítem del carrito.
-class CartItemCard extends StatelessWidget {
+// Widget auxiliar para los ítems del historial de compras (similar al de carrito)
+class PurchaseHistoryItemCard extends StatelessWidget {
   final String productName;
   final String quantity;
   final String price;
+  final String purchaseDate;
 
-  const CartItemCard({
+  const PurchaseHistoryItemCard({
     super.key,
     required this.productName,
     required this.quantity,
     required this.price,
+    required this.purchaseDate,
   });
 
   @override
@@ -133,18 +100,17 @@ class CartItemCard extends StatelessWidget {
         padding: const EdgeInsets.all(12.0),
         child: Row(
           children: [
-            // Espacio para la imagen del producto.
             Container(
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                color: Colors.blue.shade300,
+                color: Colors.blue.shade300, // Color azul para placeholder de imagen
                 borderRadius: BorderRadius.circular(10),
               ),
+              // Aquí iría la imagen del producto real
               child: const Icon(Icons.image, color: Colors.white70, size: 30),
             ),
             const SizedBox(width: 12),
-            // Nombre, cantidad y precio del producto.
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,19 +150,15 @@ class CartItemCard extends StatelessWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Fecha: $purchaseDate',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
                 ],
               ),
             ),
-            // Botón para eliminar el producto.
-            IconButton(
-              icon: Icon(Icons.delete, color: Colors.red[400], size: 28),
-              onPressed: () {
-                // TODO: Aquí va la lógica para eliminar.
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Producto "${productName}" eliminado.')),
-                );
-              },
-            ),
+            // No hay botón de eliminar en el historial de compras, pero se podría añadir si fuera necesario
           ],
         ),
       ),

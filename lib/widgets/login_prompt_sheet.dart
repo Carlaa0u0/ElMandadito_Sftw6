@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_proyecto_1/screens/login_screen.dart';
+import 'package:flutter_proyecto_1/screens/register_screen.dart';
 
-void showLoginPromptSheet(
-  BuildContext context,
-  void Function() onLogin,
-  void Function() onRegister,
-) {
+/// Muestra una ventana emergente para que el usuario inicie sesión o se registre.
+void showLoginPromptSheet(BuildContext context) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -25,9 +24,18 @@ void showLoginPromptSheet(
             ),
             child: SingleChildScrollView(
               controller: scrollController,
+              // Contenido de la ventana: botones de inicio de sesión y registro.
               child: LoginPromptSheet(
-                onLogin: onLogin,
-                onRegister: onRegister,
+                onLogin: () {
+                  Navigator.of(context).pop(); // Cierra el modal.
+                  // Importante: Navega a la pantalla de inicio de sesión.
+                  Navigator.of(context).pushNamed('/login_screen');
+                },
+                onRegister: () {
+                  Navigator.of(context).pop(); // Cierra el modal.
+                  // Importante: Navega a la pantalla de registro.
+                  Navigator.of(context).pushNamed('/register_screen');
+                },
               ),
             ),
           );
@@ -37,9 +45,10 @@ void showLoginPromptSheet(
   );
 }
 
+/// Widget que contiene los botones para iniciar sesión y registrarse.
 class LoginPromptSheet extends StatelessWidget {
-  final void Function() onLogin;
-  final void Function() onRegister;
+  final VoidCallback onLogin;    // Función al presionar "Iniciar sesión".
+  final VoidCallback onRegister; // Función al presionar "Registrarse".
 
   const LoginPromptSheet({
     super.key,
@@ -59,7 +68,7 @@ class LoginPromptSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Barrita deslizable
+          // Barra de arrastre del modal.
           Container(
             width: 40,
             height: 5,
@@ -68,9 +77,8 @@ class LoginPromptSheet extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-
           const SizedBox(height: 16),
-
+          // Texto principal del aviso.
           const Text(
             'Para continuar con tus compras, debes:',
             style: TextStyle(
@@ -79,8 +87,7 @@ class LoginPromptSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-
-          // Botones con la "O"
+          // Fila con los botones de "Iniciar sesión" y "Registrarse".
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -92,7 +99,7 @@ class LoginPromptSheet extends StatelessWidget {
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24),
                 child: Text(
-                  'O',
+                  'O', // Separador entre los botones.
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -108,7 +115,7 @@ class LoginPromptSheet extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-
+          // Mensaje motivacional.
           const Text(
             '¡Qué esperas para ser El Mandadito ya!',
             style: TextStyle(
@@ -124,10 +131,11 @@ class LoginPromptSheet extends StatelessWidget {
   }
 }
 
+/// Widget de botón con ícono y texto.
 class _AuthButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final void Function() onTap;
+  final IconData icon;       // Ícono a mostrar.
+  final String label;        // Texto del botón.
+  final void Function() onTap; // Acción al tocar el botón.
 
   const _AuthButton({
     required this.icon,
@@ -139,6 +147,7 @@ class _AuthButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        // Contenedor redondo para el ícono.
         Ink(
           decoration: const ShapeDecoration(
             color: Colors.red,
@@ -150,7 +159,7 @@ class _AuthButton extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)), // Texto debajo del ícono.
       ],
     );
   }
