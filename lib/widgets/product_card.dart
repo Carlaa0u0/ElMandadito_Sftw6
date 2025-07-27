@@ -24,16 +24,23 @@ class ProductCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Contenedor para la imagen del producto (es un placeholder azul).
-            Container(
-              height: 100,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.blue.shade400, // Color de fondo del placeholder.
+            Expanded(
+              child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Center(
-                child: Icon(Icons.image, color: Colors.white70, size: 40),
-              ),
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Colors.grey[300],
+                      child: const Center(
+                        child: Icon(Icons.broken_image, color: Colors.grey, size: 50),
+                      )
+                    );
+                  },
+                )
+              )
             ),
             const SizedBox(height: 10),
             // Nombre del producto.

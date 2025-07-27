@@ -1,9 +1,10 @@
 // lib/screens/home_screen.dart
+import 'package:openfoodfacts/openfoodfacts.dart';
 
 import 'package:flutter/material.dart';
 import '../widgets/image_carousel.dart';
 import '../widgets/category_buttons.dart';
-import '../widgets/product_card.dart'; // Aunque ProductCard se usa en ProductGridHomeSection
+import '../widgets/product_card.dart';
 import '../widgets/login_prompt_sheet.dart';
 import 'product_detail_screen.dart';
 
@@ -13,7 +14,6 @@ class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   // Esta función `showLoginPromptSheet` muestra una ventana emergente de inicio de sesión.
-  // Importante: Su lugar ideal sería en un servicio o en el archivo principal (`main.dart`).
   void showLoginPromptSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -63,7 +63,7 @@ class HomeScreen extends StatelessWidget {
             bottomRight: Radius.circular(20),
           ),
         ),
-        backgroundColor: const Color(0xFFCB3344), // Color de la barra superior.
+        backgroundColor: const Color(0xFFCB3344),
         centerTitle: true,
         title: Row(
           mainAxisSize: MainAxisSize.min,
@@ -71,7 +71,7 @@ class HomeScreen extends StatelessWidget {
             Icon(Icons.shopping_bag, color: Colors.white),
             SizedBox(width: 8),
             Text(
-              'El Mandadito', // Título de la aplicación.
+              'El Mandadito',
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -79,7 +79,6 @@ class HomeScreen extends StatelessWidget {
             ),
           ],
         ),
-        // Campo de búsqueda en la parte inferior del AppBar.
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Padding(
@@ -105,9 +104,8 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 16),
-            const ImageCarousel(), // Muestra un carrusel de imágenes.
+            const ImageCarousel(),
             const SizedBox(height: 16),
-            // Título de la sección de categorías.
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
@@ -119,9 +117,8 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            CategoryButtons(), // Muestra botones de categorías.
+            CategoryButtons(),
             const SizedBox(height: 16),
-            // Título de la sección de productos.
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
@@ -133,8 +130,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            const ProductGridHomeSection(), // Muestra la cuadrícula de productos.
-
+            const ProductGridHomeSection(), // Aquí se inserta la cuadrícula de productos
             const SizedBox(height: 16),
           ],
         ),
@@ -143,33 +139,125 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-/// Sección de la cuadrícula de productos en la pantalla de inicio.
-class ProductGridHomeSection extends StatelessWidget {
+// **ProductGridHomeSection - NO ANIDADA DENTRO DE OTRA CLASE**
+class ProductGridHomeSection extends StatefulWidget {
   const ProductGridHomeSection({super.key});
 
   @override
+  State<ProductGridHomeSection> createState() => _ProductGridHomeSectionState();
+}
+
+class _ProductGridHomeSectionState extends State<ProductGridHomeSection> {
+  List<Product> _products = [];
+  bool _isLoading = true;
+  String _errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProducts();
+  }
+
+  Future<void> _loadProducts() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+
+      //* esto se puede cambiar
+
+      final List<String> exampleBarcodes = [
+        '3017624010701', // Nescafe
+        '049635000010',  // Heinz Ketchup
+        '7613036894042', // Kit Kat
+        '5000159489025', // Coca-Cola
+        '8710400030064', // Milka Chocolate
+        '3270190013324', // Evian Agua Mineral
+        '5449000000996', // Snickers
+        '3023290000018', // Danone Yogurt Natural
+        '3089300000018', // Lactel Leche (Ejemplo Francia)
+        '8480000000011', // Un ejemplo de código de barras genérico de España, para mostrar un caso "no encontrado" si no existe.
+      ];
+
+      List<Product> fetchedProducts = [];
+      for (String barcode in exampleBarcodes) {
+
+        final ProductQueryConfiguration configuration = ProductQueryConfiguration(
+          barcode,
+          language: OpenFoodFactsLanguage.SPANISH,
+          fields: [
+            ProductField.BARCODE,
+            ProductField.NAME, 
+            ProductField.IMAGE_FRONT_URL, 
+            ProductField.BRANDS,
+            ProductField.INGREDIENTS_TEXT,
+            ProductField.NUTRISCORE, 
+            ProductField.NOVA_GROUP, 
+            ProductField.COUNTRIES_TAGS, 
+            ProductField.CATEGORIES_TAGS, 
+            ProductField.ALLERGENS, 
+          ],
+          version: ProductQueryVersion.v3, 
+        );
+
+        final ProductResultV3 result = await OpenFoodAPIClient.getProductV3(configuration);
+
+        if (result.status == 1 && result.product != null) {
+          fetchedProducts.add(result.product!);
+        }
+      }
+
+      setState(() {
+        _products = fetchedProducts;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error al cargar productos: $e';
+        _isLoading = false;
+      });
+      debugPrint('Error cargando productos: $e');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorMessage.isNotEmpty) {
+      return Center(child: Text('$_errorMessage\nIntenta de nuevo más tarde.'));
+    }
+
+    if (_products.isEmpty) {
+      return const Center(child: Text('No se encontraron productos para mostrar.'));
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: GridView.builder(
-        physics: const NeverScrollableScrollPhysics(), // Deshabilita el scroll del grid.
-        shrinkWrap: true, // El grid ocupa solo el espacio necesario.
-        itemCount: 8, // Muestra 8 productos de ejemplo.
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        itemCount: _products.length,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2, // 2 productos por fila.
+          crossAxisCount: 2,
           mainAxisSpacing: 16,
           crossAxisSpacing: 16,
-          childAspectRatio: 0.7, // Proporción del tamaño de cada tarjeta.
+          childAspectRatio: 0.7,
         ),
         itemBuilder: (context, index) {
-          // Datos de ejemplo para cada producto.
-          final productName = 'Producto ${index + 1}';
-          final imageUrl = 'https://via.placeholder.com/150';
-          final price = (10.0 + index * 2).toStringAsFixed(2);
-          final description = 'Breve descripción del producto ${index + 1}.';
+          final product = _products[index];
+
+          final productName = product.productName ?? 'Producto sin nombre';
+          final imageUrl = product.imageFrontUrl ?? 'https://via.placeholder.com/150';
+          final price = 'N/A'; // Open Food Facts API no proporciona precios directamente
+          final description = product.ingredientsText ?? 'Ingredientes no disponibles.';
+
           return GestureDetector(
             onTap: () {
-              // Al tocar un producto, navega a la pantalla de detalles.
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -178,11 +266,12 @@ class ProductGridHomeSection extends StatelessWidget {
                     imageUrl: imageUrl,
                     price: price,
                     description: description,
+                    product: product,
                   ),
                 ),
               );
             },
-            child: ProductCard( // Muestra la tarjeta del producto.
+            child: ProductCard(
               productName: productName,
               imageUrl: imageUrl,
               price: price,

@@ -1,11 +1,13 @@
 // lib/screens/product_detail_screen.dart
 import 'package:flutter/material.dart';
+import 'package:openfoodfacts/openfoodfacts.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   final String productName;
   final String imageUrl;
   final String price;
   final String description; // Nueva propiedad para la descripción
+  final Product? product;
 
   const ProductDetailScreen({
     super.key,
@@ -13,10 +15,17 @@ class ProductDetailScreen extends StatelessWidget {
     required this.imageUrl,
     required this.price,
     this.description = 'Descripción detallada del producto. Aquí puedes añadir más información sobre sus características, ingredientes, usos, etc. Este texto es un placeholder para mostrar cómo se vería una descripción más larga.', // Descripción por defecto
+    this.product,
   });
 
   @override
   Widget build(BuildContext context) {
+
+    final String productBrands = product?.brands ?? 'No Disponible';
+    final String nutriscore = product?.nutriscore ?? 'No Disponible';
+    final String novaGroup = product?.novaGroup.toString() ?? 'No Disponible';
+    final String countries = product?.countries ?? 'No Disponibles';
+
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(80),
@@ -114,6 +123,28 @@ class ProductDetailScreen extends StatelessWidget {
                     thickness: 1,
                   ),
                   const SizedBox(height: 20),
+                  
+                  if (product != null)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text (
+                          'Información Adicional: ',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+                          _buildDetailRow('Marca:', productBrands),
+                          _buildDetailRow('Nutri-Score:', nutriscore.toUpperCase()),
+                          _buildDetailRow('Grupo NOVA:', novaGroup),
+                          _buildDetailRow('País(es) de Venta:', countries),
+                      ],
+                    ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -184,6 +215,35 @@ class ProductDetailScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: Colors.black87,
+            )
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value, 
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[700],
+              ),
+            )
+          )
+        ],
+      )
     );
   }
 }
