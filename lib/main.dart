@@ -1,16 +1,18 @@
-// lib/main.dart
+import 'package:appwrite/appwrite.dart' as models;
 import 'package:flutter/material.dart';
+import 'package:appwrite/appwrite.dart';
 import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/cart_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
-import 'screens/product_detail_screen.dart'; 
-import 'screens/personal_info_screen.dart'; 
-import 'screens/help_center_screen.dart'; 
-import 'screens/purchase_history_screen.dart'; 
-
+import 'screens/product_detail_screen.dart';
+import 'screens/personal_info_screen.dart';
+import 'screens/help_center_screen.dart';
+import 'screens/purchase_history_screen.dart';
 import 'widgets/login_prompt_sheet.dart';
+import 'services/appwrite_service.dart';
+import 'package:appwrite/models.dart' as models;
 
 void main() {
   runApp(const MyApp());
@@ -29,13 +31,11 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      // Definimos las rutas con nombre aquí
       routes: {
         '/login_screen': (context) => const LoginScreen(),
         '/register_screen': (context) => const RegisterScreen(),
-        
       },
-      home: const MainPage(), 
+      home: const MainPage(),
     );
   }
 }
@@ -49,60 +49,63 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int _currentIndex = 0;
   bool _isLoggedIn = false;
-  String? _userName = 'Usuario'; 
+  String? _userName = 'Usuario';
+  String? _userId;
 
   late List<Widget> _screens;
 
   @override
   void initState() {
     super.initState();
-    _buildScreens(); 
+    _buildScreens();
   }
 
   void _buildScreens() {
     _screens = [
-      const HomeScreen(), 
+      const HomeScreen(),
       ProfileScreen(
         onGoHome: () {
           setState(() {
-            _currentIndex = 0; 
+            _currentIndex = 0;
           });
         },
-        isLoggedIn: _isLoggedIn, 
-        userName: _userName, 
+        isLoggedIn: _isLoggedIn,
+        userName: _userName,
         onLogout: () {
-          
           setState(() {
             _isLoggedIn = false;
-            _userName = null; 
-            _currentIndex = 0; 
-            _buildScreens(); 
+            _userName = null;
+            _userId = null;
+            _currentIndex = 0;
+            _buildScreens();
           });
         },
       ),
       CartScreen(
         onGoHome: () {
           setState(() {
-            _currentIndex = 0; 
+            _currentIndex = 0;
           });
         },
+        userId: _userId ?? '',
       ),
     ];
   }
 
-  // Método para simular el inicio de sesión y actualizar el estado
-  void _handleAuthSuccess(String name) {
+  // ✅ Ahora recibe también el userId
+  void _handleAuthSuccess(String name, String userId) {
     setState(() {
       _isLoggedIn = true;
       _userName = name;
-      _currentIndex = 1; // Navega a la pestaña de Perfil después del login
-      _buildScreens(); // Reconstruye las pantallas con el nuevo estado
+      _userId = userId;
+      _currentIndex = 1;
+      _buildScreens();
     });
   }
 
-  // Función para mostrar el BottomSheet de login/registro
+  // ✅ Actualizado: obtiene el usuario actual después del login
   Future<void> _showLoginPrompt(BuildContext context) async {
-    final result = await showModalBottomSheet(
+    await showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
@@ -111,18 +114,21 @@ class _MainPageState extends State<MainPage> {
         return LoginPromptSheet(
           onLogin: () async {
             Navigator.pop(ctx);
-            final loginResult =
-                await Navigator.pushNamed(context, '/login_screen');
-            if (loginResult == true) {
-              _handleAuthSuccess(_userName ?? 'Usuario');
+            final result = await Navigator.pushNamed(context, '/login_screen');
+            if (result == true) {
+              final account = Account(AppwriteService.client);
+              final models.User userAccount = await account.get();
+              _handleAuthSuccess(userAccount.name, userAccount.$id);
             }
           },
           onRegister: () async {
             Navigator.pop(ctx);
-            final registerResult =
+            final result =
                 await Navigator.pushNamed(context, '/register_screen');
-            if (registerResult == true) {
-              _handleAuthSuccess(_userName ?? 'Usuario');
+            if (result == true) {
+              final account = Account(AppwriteService.client);
+              final models.User userAccount = await account.get();
+              _handleAuthSuccess(userAccount.name, userAccount.$id);
             }
           },
         );
@@ -133,7 +139,7 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_currentIndex], // Muestra la pantalla actual
+      body: _screens[_currentIndex],
       bottomNavigationBar: ClipRRect(
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(30),

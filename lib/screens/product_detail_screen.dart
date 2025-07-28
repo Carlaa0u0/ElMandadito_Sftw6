@@ -1,22 +1,32 @@
-// lib/screens/product_detail_screen.dart
 import 'package:flutter/material.dart';
+import '../services/appwrite_service.dart';
 
 class ProductDetailScreen extends StatelessWidget {
+  final String productId;
   final String productName;
   final String imageUrl;
-  final String price;
-  final String description; // Nueva propiedad para la descripción
+  final double price;
+  final String description;
 
   const ProductDetailScreen({
     super.key,
+    required this.productId,
     required this.productName,
     required this.imageUrl,
     required this.price,
-    this.description = 'Descripción detallada del producto. Aquí puedes añadir más información sobre sus características, ingredientes, usos, etc. Este texto es un placeholder para mostrar cómo se vería una descripción más larga.', // Descripción por defecto
+    required this.description,
   });
 
   @override
   Widget build(BuildContext context) {
+    final displayName = productName.isNotEmpty ? productName : 'Producto';
+    final displayImage = imageUrl.isNotEmpty
+        ? imageUrl
+        : 'https://via.placeholder.com/300x250.png?text=Sin+Imagen';
+    final displayPrice = price >= 0 ? price : 0.00;
+    final displayDescription =
+        description.isNotEmpty ? description : 'Sin descripción disponible';
+
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(80),
@@ -35,25 +45,20 @@ class ProductDetailScreen extends StatelessWidget {
                   Positioned(
                     left: 0,
                     child: IconButton(
-                      icon: const Icon(
-                        Icons.arrow_back,
-                        size: 30,
-                        color: Colors.white,
-                      ),
-                      onPressed: () {
-                        Navigator.of(context).pop(); // Vuelve a la pantalla anterior
-                      },
+                      icon: const Icon(Icons.arrow_back,
+                          size: 30, color: Colors.white),
+                      onPressed: () => Navigator.of(context).pop(),
                     ),
                   ),
                   Center(
                     child: Text(
-                      productName, // El título del AppBar será el nombre del producto
+                      displayName,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                         fontSize: 24,
                       ),
-                      overflow: TextOverflow.ellipsis, // Para manejar textos largos
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -70,11 +75,10 @@ class ProductDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Imagen del producto
                   ClipRRect(
                     borderRadius: BorderRadius.circular(15),
                     child: Image.network(
-                      imageUrl,
+                      displayImage,
                       fit: BoxFit.cover,
                       height: 250,
                       width: double.infinity,
@@ -82,15 +86,15 @@ class ProductDetailScreen extends StatelessWidget {
                         height: 250,
                         color: Colors.grey[300],
                         child: const Center(
-                          child: Icon(Icons.broken_image, size: 50, color: Colors.grey),
+                          child: Icon(Icons.broken_image,
+                              size: 50, color: Colors.grey),
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // Nombre del producto
                   Text(
-                    productName,
+                    displayName,
                     style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -98,9 +102,8 @@ class ProductDetailScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  // Descripción del producto
                   Text(
-                    description,
+                    displayDescription,
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey[700],
@@ -108,17 +111,12 @@ class ProductDetailScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // Línea divisoria
-                  Divider(
-                    color: Colors.grey[300],
-                    thickness: 1,
-                  ),
+                  Divider(color: Colors.grey[300], thickness: 1),
                   const SizedBox(height: 20),
                 ],
               ),
             ),
           ),
-          // Sección de Precio y Botón "Añadir al Carrito" (Sticky footer)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
             decoration: BoxDecoration(
@@ -128,7 +126,7 @@ class ProductDetailScreen extends StatelessWidget {
                   color: Colors.grey.withOpacity(0.2),
                   spreadRadius: 2,
                   blurRadius: 5,
-                  offset: const Offset(0, -3), // Sombra hacia arriba
+                  offset: const Offset(0, -3),
                 ),
               ],
               borderRadius: const BorderRadius.only(
@@ -144,27 +142,44 @@ class ProductDetailScreen extends StatelessWidget {
                   children: [
                     Text(
                       'Precio',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     ),
                     Text(
-                      '\$$price',
+                      '\$${displayPrice.toStringAsFixed(2)}',
                       style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFFCB3344), // Color de acento
+                        color: Color(0xFFCB3344),
                       ),
                     ),
                   ],
                 ),
                 ElevatedButton.icon(
-                  onPressed: () {
-                    // TODO: Lógica para añadir al carrito
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('"${productName}" añadido al carrito!')),
-                    );
+                  onPressed: () async {
+                    try {
+                      final user = await AppwriteService.account.get();
+                      final userId = user.$id;
+
+                      await AppwriteService.agregarAlCarrito(
+                        userId: userId,
+                        productoId: productId,
+                        nombre: displayName,
+                        precio: displayPrice,
+                        imagen: displayImage,
+                        cantidad: 1,
+                      );
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('"$displayName" añadido al carrito'),
+                        ),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Error al añadir al carrito')),
+                      );
+                    }
                   },
                   icon: const Icon(Icons.shopping_cart, color: Colors.white),
                   label: const Text(
@@ -172,8 +187,9 @@ class ProductDetailScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 18, color: Colors.white),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFCB3344), // Color de acento
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    backgroundColor: const Color(0xFFCB3344),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),

@@ -1,16 +1,42 @@
 // lib/widgets/category_buttons.dart
+
 import 'package:flutter/material.dart';
 
 class CategoryButtons extends StatelessWidget {
-  // Eliminamos 'const' del constructor porque la lista 'categories' no es const
-  CategoryButtons({super.key}); // <-- CORRECCIÓN AQUÍ: SE REMOVIÓ 'const'
+  final Function(String) onCategorySelected;
+  final String selectedCategory;
 
-  // La lista 'categories' puede ser final, pero no necesariamente const si la vamos a modificar
-  // o si sus elementos no son todos constantes. Para este caso, está bien como final.
-  final List<String> categories = const [ // <-- OPCIONAL: Puedes hacer la lista 'const' si todos sus elementos son literales.
-    "Frutas", "Verduras", "Carnes", "Lácteos", "Bebidas", "Snacks",
-    "Panadería", "Congelados", "Despensa", "Limpieza", "Higiene Personal", "Mascotas"
+  CategoryButtons({
+    super.key,
+    required this.onCategorySelected,
+    required this.selectedCategory,
+  });
+
+  final List<String> categories = const [
+    "Frutas",
+    "Verduras",
+    "Carnes",
+    "Lácteos",
+    "Bebidas",
+    "Snacks",
+    "Panadería",
+    "Congelados",
+    "Despensa",
+    "Limpieza",
+    "Higiene Personal",
+    "Mascotas"
   ];
+
+  String normalizar(String texto) {
+    return texto
+        .toLowerCase()
+        .replaceAll(RegExp(r'[áàäâ]'), 'a')
+        .replaceAll(RegExp(r'[éèëê]'), 'e')
+        .replaceAll(RegExp(r'[íìïî]'), 'i')
+        .replaceAll(RegExp(r'[óòöô]'), 'o')
+        .replaceAll(RegExp(r'[úùüû]'), 'u')
+        .replaceAll('ñ', 'n');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,25 +47,26 @@ class CategoryButtons extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         itemCount: categories.length,
         itemBuilder: (context, index) {
+          final categoria = categories[index];
+          final isSelected =
+              normalizar(categoria) == normalizar(selectedCategory);
+
           return Padding(
-            padding: const EdgeInsets.only(right: 10.0), // Espacio entre botones
+            padding: const EdgeInsets.only(right: 10.0),
             child: ElevatedButton(
-              onPressed: () {
-                // TODO: Lógica para filtrar productos por categoría (este es un TODO, no un error de código)
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Categoría seleccionada: ${categories[index]}')),
-                );
-              },
+              onPressed: () => onCategorySelected(categoria),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFCB3344), // Color de los botones
+                backgroundColor:
+                    isSelected ? const Color(0xFFCB3344) : Colors.grey[400],
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30), // Bordes más redondeados
+                  borderRadius: BorderRadius.circular(30),
                 ),
                 elevation: 3,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               ),
-              child: Text(categories[index]),
+              child: Text(categoria),
             ),
           );
         },

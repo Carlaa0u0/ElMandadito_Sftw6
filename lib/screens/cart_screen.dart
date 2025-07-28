@@ -1,23 +1,65 @@
-// lib/screens/cart_screen.dart
-
+import 'package:appwrite/models.dart' as models;
 import 'package:flutter/material.dart';
+import '../services/appwrite_service.dart';
 
-/// Pantalla del carrito de compras.
-/// Muestra los productos y permite volver o ir a pagar.
-class CartScreen extends StatelessWidget {
-  final void Function() onGoHome; // Función para volver a la página principal.
+class CartScreen extends StatefulWidget {
+  final void Function() onGoHome;
+  final String userId;
 
-  const CartScreen({super.key, required this.onGoHome});
+  const CartScreen({
+    super.key,
+    required this.onGoHome,
+    required this.userId,
+  });
+
+  @override
+  State<CartScreen> createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  List<models.Document> carrito = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarCarrito();
+  }
+
+  Future<void> _cargarCarrito() async {
+    final resultado = await AppwriteService().obtenerCarrito(widget.userId);
+    setState(() {
+      carrito = resultado;
+    });
+  }
+
+  Future<void> _eliminarProducto(String id) async {
+    await AppwriteService().eliminarDelCarrito(id);
+    await _cargarCarrito();
+  }
+
+  double _calcularTotal() {
+    double total = 0.0;
+    for (var item in carrito) {
+      final data = item.data;
+      final precioRaw = data['precio'];
+
+      double precio = 0.0;
+      if (precioRaw is double) {
+        precio = precioRaw;
+      } else if (precioRaw is int) {
+        precio = precioRaw.toDouble();
+      } else if (precioRaw is String) {
+        precio = double.tryParse(precioRaw) ?? 0.0;
+      }
+
+      total += precio; // Suponiendo cantidad fija 1
+    }
+    return total;
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Productos de ejemplo en el carrito.
-    final List<Map<String, String>> cartItems = [
-      {'name': 'Producto 1', 'quantity': '2', 'price': '15.00'},
-      {'name': 'Producto 2', 'quantity': '1', 'price': '22.50'},
-      {'name': 'Producto 3', 'quantity': '3', 'price': '8.75'},
-      {'name': 'Producto 4', 'quantity': '1', 'price': '30.00'},
-    ];
+    final total = _calcularTotal();
 
     return Scaffold(
       appBar: PreferredSize(
@@ -37,12 +79,9 @@ class CartScreen extends StatelessWidget {
                   Positioned(
                     left: 0,
                     child: IconButton(
-                      icon: const Icon(
-                        Icons.arrow_back,
-                        size: 30,
-                        color: Colors.white,
-                      ),
-                      onPressed: onGoHome, // Volver atrás.
+                      icon: const Icon(Icons.arrow_back,
+                          size: 30, color: Colors.white),
+                      onPressed: widget.onGoHome,
                     ),
                   ),
                   const Center(
@@ -63,28 +102,65 @@ class CartScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // Lista de los ítems del carrito.
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: cartItems.length,
-              itemBuilder: (context, index) {
-                final item = cartItems[index];
-                // Muestra cada producto en una tarjeta.
-                return CartItemCard(
-                  productName: item['name']!,
-                  quantity: item['quantity']!,
-                  price: item['price']!,
-                );
-              },
+            child: carrito.isEmpty
+                ? const Center(child: Text('El carrito está vacío'))
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16.0),
+                    itemCount: carrito.length,
+                    itemBuilder: (context, index) {
+                      final item = carrito[index].data;
+                      final precio = item['precio'].toString();
+
+                      return CartItemCard(
+                        id: carrito[index].$id,
+                        productName: item['nombre'] ?? 'Sin nombre',
+                        price: precio,
+                        imageUrl: item['imagen'] ?? '',
+                        onDelete: _eliminarProducto,
+                      );
+                    },
+                  ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.15),
+                  spreadRadius: 1,
+                  blurRadius: 8,
+                  offset: const Offset(0, -1),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Total:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Colors.grey[800],
+                  ),
+                ),
+                Text(
+                  '\$${total.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24,
+                    color: Color(0xFFCB3344),
+                  ),
+                ),
+              ],
             ),
           ),
-          // Botón para ir a pagar.
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: ElevatedButton(
               onPressed: () {
-                // TODO: Aquí va la lógica de pago.
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Procediendo al pago...')),
                 );
@@ -110,21 +186,26 @@ class CartScreen extends StatelessWidget {
   }
 }
 
-/// Tarjeta para un solo ítem del carrito.
 class CartItemCard extends StatelessWidget {
+  final String id;
   final String productName;
-  final String quantity;
   final String price;
+  final String imageUrl;
+  final void Function(String) onDelete;
 
   const CartItemCard({
     super.key,
+    required this.id,
     required this.productName,
-    required this.quantity,
     required this.price,
+    required this.imageUrl,
+    required this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
+    final doublePrice = double.tryParse(price) ?? 0.0;
+
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -133,69 +214,40 @@ class CartItemCard extends StatelessWidget {
         padding: const EdgeInsets.all(12.0),
         child: Row(
           children: [
-            // Espacio para la imagen del producto.
             Container(
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                color: Colors.blue.shade300,
                 borderRadius: BorderRadius.circular(10),
+                color: Colors.grey[200],
               ),
-              child: const Icon(Icons.image, color: Colors.white70, size: 30),
+              child: imageUrl.isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(imageUrl, fit: BoxFit.cover),
+                    )
+                  : const Icon(Icons.image, color: Colors.grey),
             ),
             const SizedBox(width: 12),
-            // Nombre, cantidad y precio del producto.
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    productName,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade100,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Text(
-                          'cant. $quantity',
-                          style: TextStyle(fontSize: 14, color: Colors.blue.shade700),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade100,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Text(
-                          'precio \$$price',
-                          style: TextStyle(fontSize: 14, color: Colors.blue.shade700),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+              child: Text(
+                productName,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
               ),
             ),
-            // Botón para eliminar el producto.
+            Text(
+              '\$${doublePrice.toStringAsFixed(2)}',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.grey[700]),
+            ),
             IconButton(
               icon: Icon(Icons.delete, color: Colors.red[400], size: 28),
-              onPressed: () {
-                // TODO: Aquí va la lógica para eliminar.
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Producto "${productName}" eliminado.')),
-                );
-              },
+              onPressed: () => onDelete(id),
             ),
           ],
         ),

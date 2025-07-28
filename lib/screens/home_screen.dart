@@ -1,19 +1,32 @@
 // lib/screens/home_screen.dart
 
 import 'package:flutter/material.dart';
+import '../services/appwrite_service.dart';
 import '../widgets/image_carousel.dart';
 import '../widgets/category_buttons.dart';
-import '../widgets/product_card.dart'; // Aunque ProductCard se usa en ProductGridHomeSection
+import '../widgets/product_card.dart';
 import '../widgets/login_prompt_sheet.dart';
 import 'product_detail_screen.dart';
+import 'package:appwrite/models.dart';
 
-/// Pantalla principal de la aplicación.
-/// Muestra un carrusel, botones de categorías y una cuadrícula de productos.
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  // Esta función `showLoginPromptSheet` muestra una ventana emergente de inicio de sesión.
-  // Importante: Su lugar ideal sería en un servicio o en el archivo principal (`main.dart`).
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final AppwriteService appwriteService = AppwriteService();
+  late Future<List<Document>> productosFuture;
+  String categoriaSeleccionada = '';
+
+  @override
+  void initState() {
+    super.initState();
+    productosFuture = appwriteService.fetchProductos(); // carga todos
+  }
+
   void showLoginPromptSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -53,6 +66,18 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  void filtrarPorCategoria(String categoria) {
+    setState(() {
+      if (categoriaSeleccionada.toLowerCase() == categoria.toLowerCase()) {
+        categoriaSeleccionada = '';
+        productosFuture = appwriteService.fetchProductos(); // sin filtro
+      } else {
+        categoriaSeleccionada = categoria;
+        productosFuture = appwriteService.fetchProductos(categoria: categoria);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,7 +88,7 @@ class HomeScreen extends StatelessWidget {
             bottomRight: Radius.circular(20),
           ),
         ),
-        backgroundColor: const Color(0xFFCB3344), // Color de la barra superior.
+        backgroundColor: const Color(0xFFCB3344),
         centerTitle: true,
         title: Row(
           mainAxisSize: MainAxisSize.min,
@@ -71,7 +96,7 @@ class HomeScreen extends StatelessWidget {
             Icon(Icons.shopping_bag, color: Colors.white),
             SizedBox(width: 8),
             Text(
-              'El Mandadito', // Título de la aplicación.
+              'El Mandadito',
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -79,11 +104,11 @@ class HomeScreen extends StatelessWidget {
             ),
           ],
         ),
-        // Campo de búsqueda en la parte inferior del AppBar.
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: TextField(
               decoration: InputDecoration(
                 hintText: 'Buscar productos...',
@@ -105,23 +130,27 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 16),
-            const ImageCarousel(), // Muestra un carrusel de imágenes.
+            const ImageCarousel(),
             const SizedBox(height: 16),
-            // Título de la sección de categorías.
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
                 'Categorías',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
+                  color: categoriaSeleccionada.isEmpty
+                      ? Colors.black
+                      : const Color(0xFFCB3344),
                 ),
               ),
             ),
             const SizedBox(height: 8),
-            CategoryButtons(), // Muestra botones de categorías.
+            CategoryButtons(
+              onCategorySelected: filtrarPorCategoria,
+              selectedCategory: categoriaSeleccionada,
+            ),
             const SizedBox(height: 16),
-            // Título de la sección de productos.
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
@@ -133,62 +162,84 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            const ProductGridHomeSection(), // Muestra la cuadrícula de productos.
+            FutureBuilder<List<Document>>(
+              future: productosFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'Error al cargar productos: ${snapshot.error}',
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  );
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text('No hay productos disponibles.'),
+                  );
+                } else {
+                  final productos = snapshot.data!;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: GridView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: productos.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 16,
+                        crossAxisSpacing: 16,
+                        childAspectRatio: 0.7,
+                      ),
+                      itemBuilder: (context, index) {
+                        final producto = productos[index];
+                        final productName =
+                            producto.data['nombre'] ?? 'Sin nombre';
+                        final imageUrl = producto.data['imagen'] ??
+                            'https://via.placeholder.com/150';
+                        final dynamic precioRaw =
+                            producto.data['precio'] ?? 0.0;
+                        final double price = precioRaw is double
+                            ? precioRaw
+                            : (precioRaw is int
+                                ? precioRaw.toDouble()
+                                : double.tryParse(precioRaw.toString()) ?? 0.0);
+                        final description = producto.data['descripcion'] ?? '';
 
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (ctx) => ProductDetailScreen(
+                                  productId: producto.$id, // id real
+                                  productName: productName,
+                                  imageUrl: imageUrl,
+                                  price: price,
+                                  description: description,
+                                ),
+                              ),
+                            );
+                          },
+                          child: ProductCard(
+                            productName: productName,
+                            imageUrl: imageUrl,
+                            price: price.toStringAsFixed(2),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                }
+              },
+            ),
             const SizedBox(height: 16),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// Sección de la cuadrícula de productos en la pantalla de inicio.
-class ProductGridHomeSection extends StatelessWidget {
-  const ProductGridHomeSection({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: GridView.builder(
-        physics: const NeverScrollableScrollPhysics(), // Deshabilita el scroll del grid.
-        shrinkWrap: true, // El grid ocupa solo el espacio necesario.
-        itemCount: 8, // Muestra 8 productos de ejemplo.
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2, // 2 productos por fila.
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          childAspectRatio: 0.7, // Proporción del tamaño de cada tarjeta.
-        ),
-        itemBuilder: (context, index) {
-          // Datos de ejemplo para cada producto.
-          final productName = 'Producto ${index + 1}';
-          final imageUrl = 'https://via.placeholder.com/150';
-          final price = (10.0 + index * 2).toStringAsFixed(2);
-          final description = 'Breve descripción del producto ${index + 1}.';
-          return GestureDetector(
-            onTap: () {
-              // Al tocar un producto, navega a la pantalla de detalles.
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (ctx) => ProductDetailScreen(
-                    productName: productName,
-                    imageUrl: imageUrl,
-                    price: price,
-                    description: description,
-                  ),
-                ),
-              );
-            },
-            child: ProductCard( // Muestra la tarjeta del producto.
-              productName: productName,
-              imageUrl: imageUrl,
-              price: price,
-            ),
-          );
-        },
       ),
     );
   }

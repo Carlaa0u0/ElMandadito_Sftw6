@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_proyecto_1/widgets/custom_header_painter.dart';
+import 'package:flutter_proyecto_1/services/appwrite_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -12,7 +13,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+
+  final AppwriteService _appwriteService = AppwriteService();
+
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -21,6 +27,60 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _register() async {
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
+
+    if (name.isEmpty ||
+        email.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor completa todos los campos'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Las contraseñas no coinciden'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final user = await _appwriteService.registrarUsuario(
+        email: email, password: password);
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (user != null) {
+      // Opcional: aquí podrías guardar el nombre en base de datos si quieres
+      Navigator.of(context).pop(true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text('Error al registrar usuario. Por favor, intenta de nuevo.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -75,32 +135,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 15),
                   _buildTextField('Correo', _emailController, Icons.email),
                   const SizedBox(height: 15),
-                  _buildTextField('Contraseña', _passwordController, Icons.lock, obscureText: true),
+                  _buildTextField('Contraseña', _passwordController, Icons.lock,
+                      obscureText: true),
                   const SizedBox(height: 15),
-                  _buildTextField('Confirmar Contraseña', _confirmPasswordController, Icons.lock, obscureText: true),
+                  _buildTextField('Confirmar Contraseña',
+                      _confirmPasswordController, Icons.lock,
+                      obscureText: true),
                   const SizedBox(height: 30),
                   ElevatedButton(
-                    onPressed: () {
-                      // **Aquí va tu lógica de registro real.**
-                      // Para evitar el "Dead code" y poder probar el SnackBar de error,
-                      // temporalmente lo establecemos en 'false'.
-                      // En tu implementación real, esto dependerá del resultado de tu API.
-                      bool registerSuccessful = false; // CAMBIADO A 'false' PARA PROBAR EL SNACKBAR DE ERROR
-
-                      // ignore: dead_code
-                      if (registerSuccessful) {
-                        // IMPORTANTE: Devuelve 'true' al Navigator que la llamó.
-                        // Esto hará que el 'await' en MainPage reciba 'true'.
-                        Navigator.of(context).pop(true);
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Error al registrar usuario. Por favor, intenta de nuevo.'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    },
+                    onPressed: _isLoading ? null : _register,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.cyan.shade600,
                       padding: const EdgeInsets.symmetric(vertical: 15),
@@ -108,16 +151,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    child: const Text(
-                      'Registrarse',
-                      style: TextStyle(fontSize: 18, color: Colors.white),
-                    ),
+                    child: _isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                            'Registrarse',
+                            style: TextStyle(fontSize: 18, color: Colors.white),
+                          ),
                   ),
                   const SizedBox(height: 20),
                   GestureDetector(
                     onTap: () {
-                      // Navega a la pantalla de login usando la ruta con nombre
-                      // No esperamos resultado aquí, ya que la navegación es hacia adelante.
                       Navigator.pushNamed(context, '/login_screen');
                     },
                     child: RichText(
@@ -146,7 +189,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, IconData icon, {bool obscureText = false}) {
+  Widget _buildTextField(
+      String label, TextEditingController controller, IconData icon,
+      {bool obscureText = false}) {
     return TextField(
       controller: controller,
       obscureText: obscureText,
@@ -167,7 +212,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(color: Colors.cyan.shade300, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
       ),
     );
   }

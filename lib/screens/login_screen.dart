@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_proyecto_1/widgets/custom_header_painter.dart';
+import 'package:flutter_proyecto_1/services/appwrite_service.dart'; // importa tu servicio Appwrite
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -9,16 +10,56 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  final AppwriteService _appwriteService = AppwriteService();
+
+  bool _isLoading = false;
+
   @override
   void dispose() {
-    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _login() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor completa todos los campos'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final session =
+        await _appwriteService.iniciarSesion(email: email, password: password);
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (session != null) {
+      // Login exitoso, regresa true al llamar Navigator.pop
+      Navigator.of(context).pop(true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Credenciales incorrectas o error al iniciar sesión.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -69,32 +110,13 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildTextField('Nombre', _nameController, Icons.person),
-                  const SizedBox(height: 15),
                   _buildTextField('Correo', _emailController, Icons.email),
                   const SizedBox(height: 15),
-                  _buildTextField('Contraseña', _passwordController, Icons.lock, obscureText: true),
+                  _buildTextField('Contraseña', _passwordController, Icons.lock,
+                      obscureText: true),
                   const SizedBox(height: 30),
                   ElevatedButton(
-                    onPressed: () {
-                      // **Aquí va tu lógica de autenticación real.**
-                      // Por ahora, simularemos que el login es SIEMPRE exitoso.
-                      bool loginSuccessful = true; // REEMPLAZA ESTO CON TU LÓGICA DE VALIDACIÓN
-
-                      if (loginSuccessful) {
-                        // IMPORTANTE: Devuelve 'true' al Navigator que la llamó.
-                        // Esto hará que el 'await' en MainPage reciba 'true'.
-                        Navigator.of(context).pop(true);
-                      // ignore: dead_code
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Credenciales incorrectas o error al iniciar sesión.'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    },
+                    onPressed: _isLoading ? null : _login,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.cyan.shade600,
                       padding: const EdgeInsets.symmetric(vertical: 15),
@@ -102,16 +124,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    child: const Text(
-                      'Iniciar Sesión',
-                      style: TextStyle(fontSize: 18, color: Colors.white),
-                    ),
+                    child: _isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                            'Iniciar Sesión',
+                            style: TextStyle(fontSize: 18, color: Colors.white),
+                          ),
                   ),
                   const SizedBox(height: 20),
                   GestureDetector(
                     onTap: () {
-                      // Navega a la pantalla de registro usando la ruta con nombre
-                      // No esperamos resultado aquí, ya que la navegación es hacia adelante.
                       Navigator.pushNamed(context, '/register_screen');
                     },
                     child: RichText(
@@ -140,7 +162,9 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, IconData icon, {bool obscureText = false}) {
+  Widget _buildTextField(
+      String label, TextEditingController controller, IconData icon,
+      {bool obscureText = false}) {
     return TextField(
       controller: controller,
       obscureText: obscureText,
@@ -161,7 +185,8 @@ class _LoginScreenState extends State<LoginScreen> {
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(color: Colors.cyan.shade300, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
       ),
     );
   }
