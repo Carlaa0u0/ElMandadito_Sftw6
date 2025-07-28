@@ -117,11 +117,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            CategoryButtons(
-              onCategorySelected: (categoryTag) {
-                _productGridKey.currentState?.loadProductsByCategory(categoryTag);
-              }
-            ),
+            CategoryButtons(),
             const SizedBox(height: 16),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
@@ -134,7 +130,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            ProductGridHomeSection(key: _productGridKey), // Aquí se inserta la cuadrícula de productos
+            const ProductGridHomeSection(), // Aquí se inserta la cuadrícula de productos
             const SizedBox(height: 16),
           ],
         ),
@@ -143,12 +139,7 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-final GlobalKey<_ProductGridHomeSectionState> _productGridKey = GlobalKey();
-
-
-
 // **ProductGridHomeSection - NO ANIDADA DENTRO DE OTRA CLASE**
-// ProductGridHomeSection - Fuera de HomeScreen
 class ProductGridHomeSection extends StatefulWidget {
   const ProductGridHomeSection({super.key});
 
@@ -160,70 +151,71 @@ class _ProductGridHomeSectionState extends State<ProductGridHomeSection> {
   List<Product> _products = [];
   bool _isLoading = true;
   String _errorMessage = '';
-  String _currentCategoryTag = 'en:food'; // 2. Estado para la categoría actual
 
   @override
   void initState() {
     super.initState();
-    _loadProducts(); // Carga inicial con la categoría por defecto
+    _loadProducts();
   }
-
-  // 3. Nuevo método para cargar productos por una categoría específica
-  void loadProductsByCategory(String categoryTag) {
-    if (_currentCategoryTag == categoryTag) {
-      return; // Evita recargar si la categoría no ha cambiado
-    }
-    setState(() {
-      _currentCategoryTag = categoryTag;
-    });
-    _loadProducts(); // Vuelve a cargar los productos con la nueva categoría
-  }
-
 
   Future<void> _loadProducts() async {
     setState(() {
       _isLoading = true;
       _errorMessage = '';
-      _products = []; // Limpia la lista anterior al cargar nuevos productos
     });
 
     try {
-      final ProductSearchQueryConfiguration parameters = ProductSearchQueryConfiguration(
-        language: OpenFoodFactsLanguage.SPANISH,
-        fields: [
-          ProductField.BARCODE,
-          ProductField.NAME,
-          ProductField.IMAGE_FRONT_URL,
-          ProductField.BRANDS,
-          ProductField.INGREDIENTS_TEXT,
-          ProductField.NOVA_GROUP,
-          ProductField.COUNTRIES_TAGS,
-          ProductField.CATEGORIES_TAGS,
-        ], parametersList: [
-          //PageSize(size: 10)
-        ],
-        version: ProductQueryVersion.v3
-      );
 
-      final SearchResult searchResult = await OpenFoodAPIClient.searchProducts(
-        null, // O User() si tu configuración requiere un objeto User explícito y no es suficiente con UserAgent global
-        parameters,
-      );
+      //* esto se puede cambiar
 
-      if (searchResult.products != null && searchResult.products!.isNotEmpty){
-        _products = searchResult.products!
-            .where((p) => p.productName != null && p.imageFrontUrl != null)
-            .toList();
-      } else {
-        _errorMessage = 'No se encontraron productos con la búsqueda para $_currentCategoryTag.';
+      final List<String> exampleBarcodes = [
+        '3017624010701', // Nescafe
+        '049635000010',  // Heinz Ketchup
+        '7613036894042', // Kit Kat
+        '5000159489025', // Coca-Cola
+        '8710400030064', // Milka Chocolate
+        '3270190013324', // Evian Agua Mineral
+        '5449000000996', // Snickers
+        '3023290000018', // Danone Yogurt Natural
+        '3089300000018', // Lactel Leche (Ejemplo Francia)
+        '8480000000011', // Un ejemplo de código de barras genérico de España, para mostrar un caso "no encontrado" si no existe.
+      ];
+
+      List<Product> fetchedProducts = [];
+      for (String barcode in exampleBarcodes) {
+
+        final ProductQueryConfiguration configuration = ProductQueryConfiguration(
+          barcode,
+          language: OpenFoodFactsLanguage.SPANISH,
+          fields: [
+            ProductField.BARCODE,
+            ProductField.NAME, 
+            ProductField.IMAGE_FRONT_URL, 
+            ProductField.BRANDS,
+            ProductField.INGREDIENTS_TEXT,
+            ProductField.NUTRISCORE, 
+            ProductField.NOVA_GROUP, 
+            ProductField.COUNTRIES_TAGS, 
+            ProductField.CATEGORIES_TAGS, 
+            ProductField.ALLERGENS, 
+          ],
+          version: ProductQueryVersion.v3, 
+        );
+
+        final ProductResultV3 result = await OpenFoodAPIClient.getProductV3(configuration);
+
+        if (result.status == 1 && result.product != null) {
+          fetchedProducts.add(result.product!);
+        }
       }
 
       setState(() {
+        _products = fetchedProducts;
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _errorMessage = 'Error al cargar productos: ${e.toString()}';
+        _errorMessage = 'Error al cargar productos: $e';
         _isLoading = false;
       });
       debugPrint('Error cargando productos: $e');
@@ -241,7 +233,7 @@ class _ProductGridHomeSectionState extends State<ProductGridHomeSection> {
     }
 
     if (_products.isEmpty) {
-      return const Center(child: Text('No se encontraron productos para mostrar (después de filtrar).'));
+      return const Center(child: Text('No se encontraron productos para mostrar.'));
     }
 
     return Padding(
@@ -258,9 +250,10 @@ class _ProductGridHomeSectionState extends State<ProductGridHomeSection> {
         ),
         itemBuilder: (context, index) {
           final product = _products[index];
+
           final productName = product.productName ?? 'Producto sin nombre';
           final imageUrl = product.imageFrontUrl ?? 'https://via.placeholder.com/150';
-          final price = 'N/A';
+          final price = 'N/A'; // Open Food Facts API no proporciona precios directamente
           final description = product.ingredientsText ?? 'Ingredientes no disponibles.';
 
           return GestureDetector(

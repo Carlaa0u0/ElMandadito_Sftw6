@@ -16,6 +16,8 @@ import 'widgets/login_prompt_sheet.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
 
 void main() {
+  runApp(const MyApp());
+
   //agente usuario api comida
 
   OpenFoodAPIConfiguration.userAgent = UserAgent(
@@ -23,7 +25,6 @@ void main() {
     version: '1.0.0',
   );
 
-  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
