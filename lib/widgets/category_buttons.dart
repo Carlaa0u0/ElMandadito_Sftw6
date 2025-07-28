@@ -57,7 +57,7 @@ class CategoryButtons extends StatelessWidget {
               onPressed: () => onCategorySelected(categoria),
               style: ElevatedButton.styleFrom(
                 backgroundColor:
-                    isSelected ? const Color(0xFFCB3344) : Colors.grey[400],
+                    isSelected ? const Color.fromARGB(255, 244, 120, 120) : Color(0xFFCB3344),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
