@@ -1,6 +1,5 @@
 // lib/screens/purchase_history_screen.dart
 import 'package:flutter/material.dart';
-import 'package:openfoodfacts/openfoodfacts.dart';
 
 class PurchaseHistoryScreen extends StatelessWidget {
   const PurchaseHistoryScreen({super.key});

@@ -1,7 +1,6 @@
 // lib/screens/cart_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:openfoodfacts/openfoodfacts.dart';
 
 /// Pantalla del carrito de compras.
 /// Muestra los productos y permite volver o ir a pagar.

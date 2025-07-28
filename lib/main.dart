@@ -12,19 +12,8 @@ import 'screens/purchase_history_screen.dart';
 
 import 'widgets/login_prompt_sheet.dart';
 
-// api de comida
-import 'package:openfoodfacts/openfoodfacts.dart';
-
 void main() {
   runApp(const MyApp());
-
-  //agente usuario api comida
-
-  OpenFoodAPIConfiguration.userAgent = UserAgent(
-    name: 'El Mandadito',
-    version: '1.0.0',
-  );
-
 }
 
 class MyApp extends StatelessWidget {
