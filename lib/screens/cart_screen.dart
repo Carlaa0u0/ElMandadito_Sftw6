@@ -1,5 +1,9 @@
 import 'package:appwrite/models.dart' as models;
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:url_launcher/url_launcher.dart';
+
 import '../services/appwrite_service.dart';
 
 class CartScreen extends StatefulWidget {
@@ -55,6 +59,43 @@ class _CartScreenState extends State<CartScreen> {
       total += precio; // Suponiendo cantidad fija 1
     }
     return total;
+  }
+
+  Future<void> _procederPago(double total) async {
+    try {
+      final url = Uri.parse(
+          'http://localhost:3000/create-checkout-session'); // Cambia si usas URL pública
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'amount': (total * 100).toInt(), // Stripe espera centavos
+          'currency': 'usd',
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final checkoutUrl = data['url'];
+        if (await canLaunch(checkoutUrl)) {
+          await launch(checkoutUrl, forceSafariVC: false, forceWebView: false);
+
+          // Vaciar carrito después de iniciar pago
+          await AppwriteService().vaciarCarrito(widget.userId);
+          await _cargarCarrito();
+        } else {
+          throw 'No se pudo abrir Stripe Checkout';
+        }
+      } else {
+        throw 'Error creando sesión: ${response.body}';
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al iniciar pago: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -160,11 +201,7 @@ class _CartScreenState extends State<CartScreen> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Procediendo al pago...')),
-                );
-              },
+              onPressed: () => _procederPago(total),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFCB3344),
                 foregroundColor: Colors.white,

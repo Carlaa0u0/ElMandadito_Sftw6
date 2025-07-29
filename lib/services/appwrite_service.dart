@@ -132,4 +132,19 @@ class AppwriteService {
       print('Error al eliminar del carrito: ${e.message}');
     }
   }
+
+  // Vaciar carrito completo de un usuario
+  Future<void> vaciarCarrito(String userId) async {
+    try {
+      final carritoDocs = await obtenerCarrito(userId);
+
+      for (var doc in carritoDocs) {
+        await eliminarDelCarrito(doc.$id);
+      }
+
+      print('Carrito vaciado para usuario $userId');
+    } on AppwriteException catch (e) {
+      print('Error al vaciar carrito: ${e.message}');
+    }
+  }
 }

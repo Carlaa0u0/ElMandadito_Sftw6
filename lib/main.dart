@@ -1,6 +1,10 @@
 import 'package:appwrite/appwrite.dart' as models;
 import 'package:flutter/material.dart';
 import 'package:appwrite/appwrite.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:url_launcher/url_launcher.dart';
+
 import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/cart_screen.dart';
@@ -92,7 +96,6 @@ class _MainPageState extends State<MainPage> {
     ];
   }
 
-  // ✅ Ahora recibe también el userId
   void _handleAuthSuccess(String name, String userId) {
     setState(() {
       _isLoggedIn = true;
@@ -103,7 +106,6 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
-  // ✅ Actualizado: obtiene el usuario actual después del login
   Future<void> _showLoginPrompt(BuildContext context) async {
     await showModalBottomSheet(
       context: context,
@@ -134,6 +136,32 @@ class _MainPageState extends State<MainPage> {
         );
       },
     );
+  }
+
+  // Función lista para llamar al backend Stripe si se requiere:
+  Future<void> _iniciarPagoStripe() async {
+    try {
+      final url = Uri.parse('http://localhost:3000/create-checkout-session');
+      final response = await http.post(url);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final checkoutUrl = data['url'];
+        if (await canLaunch(checkoutUrl)) {
+          await launch(checkoutUrl, forceSafariVC: false, forceWebView: false);
+        } else {
+          throw 'No se pudo abrir Stripe Checkout';
+        }
+      } else {
+        throw 'Error creando sesión: ${response.body}';
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al iniciar pago: $e')),
+        );
+      }
+    }
   }
 
   @override

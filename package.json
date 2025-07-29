@@ -1,0 +1,29 @@
+{
+  "name": "elmandadito_sftw6",
+  "version": "1.0.0",
+  "description": "<p align=\"center\">\r   <img src=\"assets/branding/logo_el_mandadito.png\" alt=\"Logo El Mandadito\" width=\"150\"/>\r </p>",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Carlaa0u0/ElMandadito_Sftw6.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Carlaa0u0/ElMandadito_Sftw6/issues"
+  },
+  "homepage": "https://github.com/Carlaa0u0/ElMandadito_Sftw6#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "stripe": "^18.3.0"
+  }
+}
