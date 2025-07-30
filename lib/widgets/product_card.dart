@@ -6,12 +6,14 @@ class ProductCard extends StatelessWidget {
   final String productName; // Nombre del producto.
   final String imageUrl; // URL real de la imagen.
   final String price; // Precio del producto.
+  final String Description; // Descripción del producto.
 
   const ProductCard({
     super.key,
     required this.productName,
     required this.imageUrl,
     required this.price,
+    required this.Description,
   });
 
   @override
@@ -57,6 +59,12 @@ class ProductCard extends StatelessWidget {
             // Precio del producto
             Text(
               price.isNotEmpty ? '\$$price' : '\$0.00',
+              style: const TextStyle(color: Colors.grey, fontSize: 14),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(
+              Description.isNotEmpty ? Description : 'Sin Descripción',
               style: const TextStyle(color: Colors.grey, fontSize: 14),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,

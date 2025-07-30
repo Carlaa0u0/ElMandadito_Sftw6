@@ -208,7 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             : (precioRaw is int
                                 ? precioRaw.toDouble()
                                 : double.tryParse(precioRaw.toString()) ?? 0.0);
-                        final description = producto.data['descripcion'] ?? '';
+                        final description = producto.data['Descripcion'] ?? '';
 
                         return GestureDetector(
                           onTap: () {
@@ -220,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   productName: productName,
                                   imageUrl: imageUrl,
                                   price: price,
-                                  description: description,
+                                  Descripcion: description,
                                 ),
                               ),
                             );
@@ -229,6 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             productName: productName,
                             imageUrl: imageUrl,
                             price: price.toStringAsFixed(2),
+                            Description: description,
                           ),
                         );
                       },
