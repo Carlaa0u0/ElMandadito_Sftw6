@@ -6,7 +6,7 @@ class ProductDetailScreen extends StatelessWidget {
   final String productName;
   final String imageUrl;
   final double price;
-  final String Descripcion;
+  final String description;
 
   const ProductDetailScreen({
     super.key,
@@ -14,7 +14,7 @@ class ProductDetailScreen extends StatelessWidget {
     required this.productName,
     required this.imageUrl,
     required this.price,
-    required this.Descripcion,
+    required this.description,
   });
 
   @override
@@ -24,7 +24,8 @@ class ProductDetailScreen extends StatelessWidget {
         ? imageUrl
         : 'https://via.placeholder.com/300x250.png?text=Sin+Imagen';
     final displayPrice = price >= 0 ? price : 0.00;
-    final displayDescription = Descripcion.isNotEmpty ? Descripcion : 'Sin descripción disponible';
+    final displayDescription =
+        description.isNotEmpty ? description : 'Sin descripción disponible';
 
     return Scaffold(
       appBar: PreferredSize(
@@ -165,7 +166,6 @@ class ProductDetailScreen extends StatelessWidget {
                         nombre: displayName,
                         precio: displayPrice,
                         imagen: displayImage,
-                        Descripcion: displayDescription,
                         cantidad: 1,
                       );
 

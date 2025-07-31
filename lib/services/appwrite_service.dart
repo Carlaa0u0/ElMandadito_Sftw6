@@ -79,8 +79,7 @@ class AppwriteService {
     required double precio,
     required String imagen,
     required int cantidad,
-    required String userId, 
-    required String Descripcion,
+    required String userId,
   }) async {
     try {
       await databases.createDocument(
@@ -94,7 +93,6 @@ class AppwriteService {
           'precio': precio,
           'imagen': imagen,
           'cantidad': cantidad,
-          'Descripcion': Descripcion,
         },
       );
       print('Producto agregado al carrito');
