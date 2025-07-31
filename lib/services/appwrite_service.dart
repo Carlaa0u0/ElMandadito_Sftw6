@@ -17,12 +17,14 @@ class AppwriteService {
 
   // Función para registrar usuario
   Future<User?> registrarUsuario({
+    required String name,
     required String email,
     required String password,
   }) async {
     try {
       final user = await account.create(
         userId: ID.unique(),
+        name: name,
         email: email,
         password: password,
       );

@@ -63,7 +63,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     final user = await _appwriteService.registrarUsuario(
-        email: email, password: password);
+        email: email, password: password, name: name);
 
     setState(() {
       _isLoading = false;

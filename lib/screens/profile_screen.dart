@@ -121,7 +121,7 @@ class ProfileScreen extends StatelessWidget {
                     Icon(Icons.person, color: Colors.grey[600], size: 28), // Ícono de persona
                     const SizedBox(width: 10),
                     Text(
-                      'Usuario', // El texto "Usuario" de la imagen
+                      'Hola, ${userName ?? 'Usuario'}',
                       style: const TextStyle(
                         fontSize: 20,
                         color: Colors.black87,
