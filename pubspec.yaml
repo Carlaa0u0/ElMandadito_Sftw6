@@ -30,5 +30,6 @@ flutter:
     - assets/banner3.jpg
     - assets/banner4.jpg
     - assets/banner5.jpg
+    - assets/logo.png
     # Si tienes otras imágenes de productos en una subcarpeta 'assets/products/', añádelas aquí:
     # - assets/products/

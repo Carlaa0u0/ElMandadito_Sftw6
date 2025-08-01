@@ -53,7 +53,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                   ),
                   const Center(
                     child: Text(
-                      'Centro de Ayuda',
+                      'Feedback',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -78,7 +78,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Si tienes una consulta, no dudes en hacérnoslo llegar',
+                    'Si tienes una sugerencia, no dudes en hacérnoslo llegar',
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey[700],
@@ -93,7 +93,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
               controller: _queryController,
               maxLines: 8, // Permite varias líneas de texto.
               decoration: InputDecoration(
-                hintText: 'Escribe tu consulta aquí...',
+                hintText: 'Escribe tu sugerencia aquí...',
                 filled: true,
                 fillColor: Colors.grey[200],
                 border: OutlineInputBorder(
@@ -118,7 +118,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                 onPressed: () {
                   // TODO: Aquí va la lógica para enviar la consulta (ej. a una API o base de datos).
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Consulta enviada. Te responderemos pronto.')),
+                    const SnackBar(content: Text('Sugerencia enviada. Gracias por tu apoyo!')),
                   );
                   _queryController.clear(); // Limpia el campo después de enviar.
                 },
@@ -132,7 +132,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                   elevation: 5,
                 ),
                 child: const Text(
-                  'Enviar consulta',
+                  'Enviar Sugerencia',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),

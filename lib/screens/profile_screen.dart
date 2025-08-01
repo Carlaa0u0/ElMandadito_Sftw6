@@ -163,17 +163,14 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    // Container(
-                    //   height: 180,
-                    //   width: 180,
-                    //   color: Colors.white, // Fondo blanco para el QR
-                    //   child: const Center(
-                    //     child: Text(
-                    //       'Código QR aquí',
-                    //       style: TextStyle(color: Colors.grey, fontSize: 16),
-                    //     ),
-                    //   ),
-                    // ),
+                    Container(
+                      height: 180,
+                      width: 180,
+                      color: Colors.white, // Fondo blanco para el QR
+                      child: Center(
+                        child: Image.asset('assets/logo.png'),
+                      ),
+                    ),
                     const SizedBox(height: 16),
                     // Botón "Contactanos" con el estilo específico de la imagen
                     ElevatedButton.icon(
