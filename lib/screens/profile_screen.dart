@@ -1,5 +1,6 @@
 // lib/screens/profile_screen.dart
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'personal_info_screen.dart';
 import 'help_center_screen.dart';
 import 'purchase_history_screen.dart';
@@ -156,25 +157,29 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    Container(
-                      height: 180,
-                      width: 180,
-                      color: Colors.white, // Fondo blanco para el QR
-                      child: const Center(
-                        child: Text(
-                          'Código QR aquí',
-                          style: TextStyle(color: Colors.grey, fontSize: 16),
-                        ),
-                      ),
-                    ),
+                    // Container(
+                    //   height: 180,
+                    //   width: 180,
+                    //   color: Colors.white, // Fondo blanco para el QR
+                    //   child: const Center(
+                    //     child: Text(
+                    //       'Código QR aquí',
+                    //       style: TextStyle(color: Colors.grey, fontSize: 16),
+                    //     ),
+                    //   ),
+                    // ),
                     const SizedBox(height: 16),
                     // Botón "Contactanos" con el estilo específico de la imagen
                     ElevatedButton.icon(
-                      onPressed: () {
-                        // Acción para Contactanos (puedes navegar a HelpCenterScreen si es lo mismo)
-                        ScaffoldMessenger.of(context).showSnackBar(
+                      onPressed: () async {
+                        const wppUrl = 'https://wa.me/50766017407';
+                        if (await canLaunchUrl(Uri.parse(wppUrl))) {
+                          await launchUrl(Uri.parse(wppUrl), mode: LaunchMode.externalApplication);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Abriendo Contactanos...')),
                         );
+                        }
                       },
                       icon: const Icon(Icons.send, color: Colors.white), // Ícono blanco
                       label: const Text('Contáctanos', style: TextStyle(color: Colors.white)), // Texto blanco
