@@ -25,12 +25,14 @@ class ProfileScreen extends StatelessWidget {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
-    Color backgroundColor = const Color(0xFF88D0E0), // Color azul claro de la imagen
+    Color backgroundColor =
+        const Color(0xFF88D0E0), // Color azul claro de la imagen
     Color iconColor = Colors.white,
     Color textColor = Colors.white,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6.0), // Espacio entre elementos
+      margin:
+          const EdgeInsets.symmetric(vertical: 6.0), // Espacio entre elementos
       child: ElevatedButton.icon(
         onPressed: onTap,
         icon: Icon(icon, color: iconColor, size: 24),
@@ -45,17 +47,18 @@ class ProfileScreen extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor,
           foregroundColor: textColor, // Color del texto y el icono
-          minimumSize: const Size(double.infinity, 55), // Ancho completo y altura fija
+          minimumSize:
+              const Size(double.infinity, 55), // Ancho completo y altura fija
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15), // Bordes redondeados
           ),
           elevation: 3, // Sombra
-          padding: const EdgeInsets.symmetric(horizontal: 20), // Padding interno
+          padding:
+              const EdgeInsets.symmetric(horizontal: 20), // Padding interno
         ),
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +111,8 @@ class ProfileScreen extends StatelessWidget {
             // Tarjeta de bienvenida de usuario (ajustada para el diseño de la imagen)
             Card(
               margin: const EdgeInsets.only(bottom: 20),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15)),
               elevation: 3,
               child: Container(
                 width: double.infinity,
@@ -119,7 +123,8 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.person, color: Colors.grey[600], size: 28), // Ícono de persona
+                    Icon(Icons.person,
+                        color: Colors.grey[600], size: 28), // Ícono de persona
                     const SizedBox(width: 10),
                     Text(
                       'Hola, ${userName ?? 'Usuario'}',
@@ -146,7 +151,8 @@ class ProfileScreen extends StatelessWidget {
             // Sección del QR y Contactanos (ajustada para el diseño de la imagen)
             Card(
               margin: const EdgeInsets.only(bottom: 20),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15)),
               elevation: 3,
               child: Container(
                 width: double.infinity,
@@ -174,20 +180,28 @@ class ProfileScreen extends StatelessWidget {
                       onPressed: () async {
                         const wppUrl = 'https://wa.me/50766017407';
                         if (await canLaunchUrl(Uri.parse(wppUrl))) {
-                          await launchUrl(Uri.parse(wppUrl), mode: LaunchMode.externalApplication);
+                          await launchUrl(Uri.parse(wppUrl),
+                              mode: LaunchMode.externalApplication);
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Abriendo Contactanos...')),
-                        );
+                            const SnackBar(
+                                content: Text('Abriendo Contactanos...')),
+                          );
                         }
                       },
-                      icon: const Icon(Icons.send, color: Colors.white), // Ícono blanco
-                      label: const Text('Contáctanos', style: TextStyle(color: Colors.white)), // Texto blanco
+                      icon: const Icon(Icons.send,
+                          color: Colors.white), // Ícono blanco
+                      label: const Text('Contáctanos',
+                          style:
+                              TextStyle(color: Colors.white)), // Texto blanco
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF88D0E0), // Color azul claro
-                        minimumSize: const Size(180, 45), // Tamaño fijo como en la imagen
+                        backgroundColor:
+                            const Color(0xFF88D0E0), // Color azul claro
+                        minimumSize: const Size(
+                            180, 45), // Tamaño fijo como en la imagen
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30), // Bordes más redondeados
+                          borderRadius: BorderRadius.circular(
+                              30), // Bordes más redondeados
                         ),
                         elevation: 3,
                       ),
@@ -198,18 +212,7 @@ class ProfileScreen extends StatelessWidget {
             ),
 
             // Menú de opciones (usando el nuevo widget _buildStyledProfileMenuItem)
-            _buildStyledProfileMenuItem(
-              context: context,
-              icon: Icons.payment,
-              title: 'Información de Pago',
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Abriendo Información de Pago...')),
-                );
-                // Si tuvieras una pantalla para esto, navegarías así:
-                // Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentInfoScreen()));
-              },
-            ),
+
             _buildStyledProfileMenuItem(
               context: context,
               icon: Icons.person,
@@ -217,29 +220,20 @@ class ProfileScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const PersonalInfoScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => const PersonalInfoScreen()),
                 );
               },
             ),
             _buildStyledProfileMenuItem(
               context: context,
               icon: Icons.help_outline,
-              title: 'Centro de ayuda',
+              title: 'Feedback',
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const HelpCenterScreen()),
-                );
-              },
-            ),
-            _buildStyledProfileMenuItem(
-              context: context,
-              icon: Icons.history,
-              title: 'Historial de compra',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const PurchaseHistoryScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => const HelpCenterScreen()),
                 );
               },
             ),
@@ -253,7 +247,8 @@ class ProfileScreen extends StatelessWidget {
                 label: const Text('Cerrar Sesión'),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 55),
-                  backgroundColor: const Color(0xFFCB3344), // Rojo para cerrar sesión
+                  backgroundColor:
+                      const Color(0xFFCB3344), // Rojo para cerrar sesión
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),
